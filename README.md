@@ -8,7 +8,7 @@
 
 代码由 [通义](https://www.tongyi.com/) 以及 [DeepSeek](https://chat.deepseek.com/) 编写。
 
-## 其写在前面的话
+## 写在前面的话
 
 本人能力有限，做出的测试并不多，脚本使用过程中可能遇到各种各样的 BUG。
 
