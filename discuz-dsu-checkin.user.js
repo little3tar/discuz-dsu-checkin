@@ -3,6 +3,7 @@
 // ==UserScript==
 // @name          DSU多站自动签到 (基于Ne-21脚本重构)
 // @namespace     https://bbs.tampermonkey.net.cn/
+// @homepage      https://github.com/little3tar/discuz-dsu-checkin
 // @version       0.0.8
 // @description   支持 油猴中文网、Anime字幕论坛、天使动漫论坛 的DSU每日自动签到，优化通知+风控防护+手动菜单
 // @author        sakura (基于Ne-21脚本重构)
