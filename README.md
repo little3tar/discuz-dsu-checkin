@@ -2,7 +2,7 @@
 
 在使用 [Ne-21](https://scriptcat.org/zh-CN/users/227) 发布的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 时，我发现有几个网站使用的是同样的签到方式，于是想到一个脚本能否能签到多个网站。
 
-于是基于**DSU每日自动签到(上云版)**，在 AI 的帮助下拓展了脚本的功能，现在支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
+此脚本基于**DSU每日自动签到(上云版)**，在 AI 的帮助下拓展了脚本的功能，现在支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
 
 脚本已经添加对 [Anime字幕论坛](https://bbs.acgrip.com/) 和 [天使动漫论坛](https://www.tsdm39.com/forum.php) 的支持，如果有其它网站的需求，可以自行在代码顶部 `const SITES` 添加。
 
