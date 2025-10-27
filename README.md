@@ -1,12 +1,12 @@
 # DSU多站自动签到 (基于Ne-21脚本重构)
 
-在使用 [Ne-21](https://scriptcat.org/zh-CN/users/227) 发布的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 时发现有几个网站使用的是同样的签到方式，于是想要一个脚本同时能签到多个网站。
+在使用 [Ne-21](https://scriptcat.org/zh-CN/users/227) 发布的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 时，我发现有几个网站使用的是同样的签到方式，于是想到一个脚本能否能签到多个网站。
 
-于是基于**DSU每日自动签到(上云版)**，在 AI 的帮助下修改拓展了脚本功能，支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
-
-代码由 [通义](https://www.tongyi.com/) 以及 [DeepSeek](https://chat.deepseek.com/) 编写。
+于是基于**DSU每日自动签到(上云版)**，在 AI 的帮助下拓展了脚本的功能，现在支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
 
 脚本已经添加对 [Anime字幕论坛](https://bbs.acgrip.com/) 和 [天使动漫论坛](https://www.tsdm39.com/forum.php) 的支持，如果有其它网站的需求，可以自行在代码顶部 `const SITES` 添加。
+
+代码由 [通义](https://www.tongyi.com/) 以及 [DeepSeek](https://chat.deepseek.com/) 编写。
 
 ## 添加了以下功能：
 
@@ -39,3 +39,14 @@
     状态反馈 - 实时反馈执行状态
 
     区分通知 - 区分正常执行和重试操作
+## 已知的问题
+
+- 打开浏览器必须运行一次才能看到**手动触发菜单**
+
+## 刚想到也许会加上的功能
+
+- 脚本内置多个支持 DSU 签到的网站，安装脚本后可以自行选择启用哪几个
+
+## 其他
+
+本人能力有限，做出的测试并不多，可能遇到各种各样的 BUG，脚本已经在 [GitHub](https://github.com/little3tar/discuz-dsu-checkin) 开源，欢迎来修复某个 BUG 或完善添加更多支持的网站。
