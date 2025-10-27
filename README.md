@@ -2,7 +2,7 @@
 
 在使用 [Ne-21](https://scriptcat.org/zh-CN/users/227) 发布的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 时发现有几个网站使用的是同样的签到方式，于是想要一个脚本同时能签到多个网站。
 
-于是基于DSU每日自动签到(上云版)，在 AI 的帮助下修改拓展了脚本功能，支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
+于是基于**DSU每日自动签到(上云版)**，在 AI 的帮助下修改拓展了脚本功能，支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
 
 代码由 [通义](https://www.tongyi.com/) 以及 [DeepSeek](https://chat.deepseek.com/) 编写。
 
