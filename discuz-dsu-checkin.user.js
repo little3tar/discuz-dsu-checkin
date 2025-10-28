@@ -4,10 +4,10 @@
 // @name          DSU多站自动签到 (基于Ne-21脚本重构)
 // @namespace     https://bbs.tampermonkey.net.cn/
 // @homepage      https://github.com/little3tar/discuz-dsu-checkin
-// @version       0.0.9
+// @version       0.0.10
 // @description   支持 油猴中文网、Anime字幕论坛、天使动漫论坛 的 DSU 每日自动签到，优化通知+风控防护+手动菜单
 // @author        sakura (基于Ne-21脚本重构)
-// @crontab       * * once * *
+// @crontab       * */4 * * *
 // @grant         GM_notification
 // @grant         GM_xmlhttpRequest
 // @grant         GM_log
@@ -79,34 +79,34 @@ async function main() {
         GM_notification('签到正在进行中，请稍候...');
         return;
     }
-    
+
     isRunning = true;
     GM_log('开始执行多站自动签到...');
-    
+
     const results = [];
-    
+
     // 顺序执行，避免并发请求
     for (let i = 0; i < SITES.length; i++) {
         const site = SITES[i];
-        
+
         // 站点间随机延迟（防风控）
         if (i > 0) {
             const delay = getRandomDelay();
-            GM_log(`等待 ${delay/1000} 秒后执行下一个站点...`);
+            GM_log(`等待 ${delay / 1000} 秒后执行下一个站点...`);
             await sleep(delay);
         }
-        
+
         GM_log(`开始签到: ${site.name}`);
         const result = await signSiteWithRetry(site);
         results.push(result);
     }
-    
+
     // 发送汇总通知
     sendSummaryNotification(results);
-    
+
     // 保存历史记录
     saveHistory(results);
-    
+
     GM_log('多站签到执行完成');
     isRunning = false;
 }
@@ -117,7 +117,7 @@ function startSignProcess() {
         GM_notification('签到正在进行中，请稍候...');
         return;
     }
-    
+
     GM_notification('开始手动执行多站签到...');
     main().catch(error => {
         GM_notification(`签到过程出错: ${error.message}`);
@@ -131,20 +131,20 @@ function showHistory() {
         GM_log('尝试查看历史记录...');
         const history = GM_getValue('signHistory', []);
         GM_log(`获取到历史记录条数: ${history.length}`);
-        
+
         if (history.length === 0) {
             alert('暂无签到历史记录');
             return;
         }
-        
+
         let historyText = '📅 签到历史记录\n\n';
-        
+
         // 只显示最近5次记录
         const recentHistory = history.slice(-5).reverse();
-        
+
         recentHistory.forEach((record, index) => {
             historyText += `【${record.time}】\n`;
-            
+
             if (record.results && Array.isArray(record.results)) {
                 record.results.forEach(result => {
                     if (typeof result === 'string') {
@@ -162,15 +162,15 @@ function showHistory() {
             } else {
                 historyText += `  无详细记录\n`;
             }
-            
+
             historyText += '\n';
         });
-        
+
         // 使用更简单的alert方式
         GM_log('准备显示历史记录对话框');
         alert(historyText);
         GM_log('历史记录显示完成');
-        
+
     } catch (error) {
         GM_log('显示历史记录时出错: ' + error.message);
         alert('显示历史记录时出错: ' + error.message);
@@ -183,16 +183,16 @@ function retryFailedSites() {
         GM_notification('签到正在进行中，请稍候...');
         return;
     }
-    
+
     const history = GM_getValue('signHistory', []);
     if (history.length === 0) {
         alert('暂无历史记录可用于重试');
         return;
     }
-    
+
     const lastRecord = history[history.length - 1];
     const failedSites = [];
-    
+
     // 提取失败的站点
     if (lastRecord.results && Array.isArray(lastRecord.results)) {
         lastRecord.results.forEach(result => {
@@ -206,15 +206,15 @@ function retryFailedSites() {
             }
         });
     }
-    
+
     if (failedSites.length === 0) {
         alert('上次执行没有失败的站点');
         return;
     }
-    
+
     const siteNames = failedSites.map(item => item.name);
     const siteNamesText = siteNames.join(', ');
-    
+
     if (confirm(`发现 ${failedSites.length} 个失败站点:\n${siteNamesText}\n\n是否立即重试？`)) {
         GM_notification(`开始重试 ${failedSites.length} 个失败站点...`);
         retrySpecificSites(siteNames);
@@ -224,29 +224,29 @@ function retryFailedSites() {
 // 重试特定站点
 async function retrySpecificSites(siteNames) {
     isRunning = true;
-    
+
     const results = [];
     const sitesToRetry = SITES.filter(site => siteNames.includes(site.name));
-    
+
     if (sitesToRetry.length === 0) {
         alert('未找到对应的站点配置');
         isRunning = false;
         return;
     }
-    
+
     for (let i = 0; i < sitesToRetry.length; i++) {
         const site = sitesToRetry[i];
-        
+
         if (i > 0) {
             const delay = getRandomDelay();
             await sleep(delay);
         }
-        
+
         GM_log(`重试签到: ${site.name}`);
         const result = await signSiteWithRetry(site);
         results.push(result);
     }
-    
+
     sendSummaryNotification(results, true);
     saveHistory(results);
     isRunning = false;
@@ -259,7 +259,7 @@ function signSiteWithRetry(site, retryCount = 0) {
             resolve(result);
         }).catch(error => {
             if (retryCount < SECURITY_CONFIG.maxRetries) {
-                GM_log(`${site.name} 签到失败，${SECURITY_CONFIG.minDelay/1000}秒后重试...`);
+                GM_log(`${site.name} 签到失败，${SECURITY_CONFIG.minDelay / 1000}秒后重试...`);
                 setTimeout(() => {
                     resolve(signSiteWithRetry(site, retryCount + 1));
                 }, SECURITY_CONFIG.minDelay);
@@ -284,28 +284,28 @@ function signSite(site) {
             url: site.signPageUrl,
             method: 'GET',
             timeout: SECURITY_CONFIG.timeout,
-            onload: function(xhr) {
+            onload: function (xhr) {
                 if (xhr.status !== 200) {
                     reject(new Error(`HTTP ${xhr.status}`));
                     return;
                 }
-                
+
                 var res = xhr.responseText;
-                var formhash = getStr(res, 'formhash=', '"') || 
-                              getStr(res, 'name="formhash" value="', '"');
-                
+                var formhash = getStr(res, 'formhash=', '"') ||
+                    getStr(res, 'name="formhash" value="', '"');
+
                 if (!formhash) {
                     reject(new Error('formhash获取失败'));
                     return;
                 }
-                
+
                 // 第二步：提交签到
                 submitSign(site, formhash).then(resolve).catch(reject);
             },
-            onerror: function() {
+            onerror: function () {
                 reject(new Error('网络错误'));
             },
-            ontimeout: function() {
+            ontimeout: function () {
                 reject(new Error('请求超时'));
             }
         });
@@ -320,11 +320,11 @@ function submitSign(site, formhash) {
         const todaysay = encodeURIComponent(getRandomSignText());
         const fastreply = Math.random() > 0.5 ? 0 : 1; // 随机选择是否快速回复
 
-        const postData = 'formhash=' + encodeURIComponent(formhash) + 
-                        '&qdxq=' + qdxq + 
-                        '&qdmode=1' + 
-                        '&todaysay=' + todaysay + 
-                        '&fastreply=' + fastreply;
+        const postData = 'formhash=' + encodeURIComponent(formhash) +
+            '&qdxq=' + qdxq +
+            '&qdmode=1' +
+            '&todaysay=' + todaysay +
+            '&fastreply=' + fastreply;
 
         GM_xmlhttpRequest({
             method: 'POST',
@@ -335,11 +335,11 @@ function submitSign(site, formhash) {
                 'Referer': site.referer
             },
             timeout: SECURITY_CONFIG.timeout,
-            onload: function(xhr) {
+            onload: function (xhr) {
                 console.log(xhr.responseText);
                 var res = xhr.responseText.replace(/\s/g, "");
                 var msg = getStr(res, '<divclass="c">', '</div></div>]]>');
-                
+
                 if (!msg) {
                     if (res.includes('已经签到')) {
                         msg = '今日已签到';
@@ -351,12 +351,12 @@ function submitSign(site, formhash) {
                         return;
                     }
                 }
-                
+
                 // 解析积分信息
                 const pointsInfo = parsePoints(msg);
-                
+
                 GM_log(site.name + "签到结果: " + msg, "info");
-                
+
                 resolve({
                     site: site.name,
                     success: true,
@@ -365,10 +365,10 @@ function submitSign(site, formhash) {
                     displayText: `✅ ${site.name}: ${pointsInfo || msg}`
                 });
             },
-            onerror: function() {
+            onerror: function () {
                 reject(new Error('请求失败'));
             },
-            ontimeout: function() {
+            ontimeout: function () {
                 reject(new Error('请求超时'));
             }
         });
@@ -379,23 +379,23 @@ function submitSign(site, formhash) {
 function sendSummaryNotification(results, isRetry = false) {
     const successCount = results.filter(r => r.success).length;
     const totalCount = results.length;
-    
+
     let notificationText = `${isRetry ? '🔄 重试结果' : '📊 签到完成'}: ${successCount}/${totalCount} 成功\n\n`;
-    
+
     results.forEach(result => {
         notificationText += result.displayText + '\n';
     });
-    
+
     // 添加时间戳
     const timestamp = new Date().toLocaleString();
     notificationText += `\n执行时间: ${timestamp}`;
-    
+
     GM_notification({
         title: `${isRetry ? '🔄' : '📊'} 多站${isRetry ? '重试' : '签到'}完成`,
         text: notificationText,
         timeout: 10000,
     });
-    
+
     GM_log(`【${isRetry ? '重试' : '签到'}结果汇总】\n` + notificationText);
 }
 
@@ -411,19 +411,19 @@ function saveHistory(results) {
     try {
         const history = GM_getValue('signHistory', []);
         const timeStr = new Date().toLocaleString();
-        
+
         const historyEntry = {
             time: timeStr,
             results: results
         };
-        
+
         history.push(historyEntry);
-        
+
         // 只保留最近10条记录
         if (history.length > 10) {
             history.splice(0, history.length - 10);
         }
-        
+
         GM_setValue('signHistory', history);
         GM_log(`历史记录已保存，当前记录数: ${history.length}`);
     } catch (error) {
