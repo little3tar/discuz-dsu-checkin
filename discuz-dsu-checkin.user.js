@@ -14,13 +14,15 @@
 // @grant         GM_setValue
 // @grant         GM_getValue
 // @grant         GM_registerMenuCommand
-// @cloudcat            
 // @exportcookie  domain=.tampermonkey.net.cn
 // @exportcookie  domain=.bbs.acgrip.com
 // @exportcookie  domain=.tsdm39.com
 // @connect       bbs.tampermonkey.net.cn
 // @connect       bbs.acgrip.com
 // @connect       www.tsdm39.com
+// @match         *://bbs.tampermonkey.net.cn/*
+// @match         *://bbs.acgrip.com/*
+// @match         *://www.tsdm39.com/*
 // ==/UserScript==
 
 const SITES = [
@@ -55,6 +57,12 @@ const SECURITY_CONFIG = {
     timeout: 15000  // 请求超时时间
 };
 
+// 频率控制配置
+const FREQUENCY_CONFIG = {
+    minInterval: 4 * 60 * 60 * 1000, // 最小执行间隔4小时
+    autoRunEnabled: true // 是否启用自动执行
+};
+
 // 脚本状态
 let isRunning = false;
 
@@ -64,14 +72,40 @@ function initMenu() {
         GM_registerMenuCommand('🚀 执行签到', startSignProcess);
         GM_registerMenuCommand('📊 查看历史', showHistory);
         GM_registerMenuCommand('🔄 立即重试失败站点', retryFailedSites);
+        GM_registerMenuCommand('⚙️ 切换自动执行', toggleAutoRun);
         GM_log('菜单初始化完成');
     } catch (error) {
         GM_log('菜单初始化失败: ' + error.message);
     }
 }
 
-// 初始化脚本
-initMenu();
+// 切换自动执行状态
+function toggleAutoRun() {
+    const current = GM_getValue('autoRunEnabled', true);
+    const newState = !current;
+    GM_setValue('autoRunEnabled', newState);
+    alert(`自动执行已${newState ? '开启' : '关闭'}`);
+    GM_log(`自动执行状态切换为: ${newState ? '开启' : '关闭'}`);
+}
+
+// 检查执行频率
+function shouldExecute() {
+    if (!GM_getValue('autoRunEnabled', true)) {
+        GM_log('自动执行已禁用，跳过本次执行');
+        return false;
+    }
+
+    const lastExecution = GM_getValue('lastExecution', 0);
+    const now = Date.now();
+
+    if (now - lastExecution < FREQUENCY_CONFIG.minInterval) {
+        GM_log('距离上次执行时间过短，跳过本次执行');
+        return false;
+    }
+
+    GM_setValue('lastExecution', now);
+    return true;
+}
 
 // 主执行函数
 async function main() {
@@ -109,21 +143,27 @@ async function main() {
 
     GM_log('多站签到执行完成');
     isRunning = false;
+    GM_setValue('isManualExecution', false); // 重置手动执行标志
 }
 
-// 手动触发入口
+// 修改手动触发函数
 function startSignProcess() {
     if (isRunning) {
         GM_notification('签到正在进行中，请稍候...');
         return;
     }
 
+    GM_setValue('isManualExecution', true); // 标记为手动执行
     GM_notification('开始手动执行多站签到...');
     main().catch(error => {
         GM_notification(`签到过程出错: ${error.message}`);
         isRunning = false;
+        GM_setValue('isManualExecution', false);
     });
 }
+
+// 初始化脚本
+initMenu();
 
 // 查看历史记录 - 修复版本
 function showHistory() {
@@ -463,5 +503,11 @@ function getStr(str, start, end) {
     return res ? res[1] : null;
 }
 
-// 启动脚本（保持原有crontab自动执行）
-main();
+// 启动脚本（自动执行时检查频率）
+if (shouldExecute()) {
+    main().catch(error => {
+        GM_log('自动执行失败: ' + error.message);
+    });
+} else {
+    GM_log('脚本已加载，等待手动执行或定时触发');
+}
