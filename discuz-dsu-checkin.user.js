@@ -2,9 +2,9 @@
 // eslint-disable-next-line userscripts/no-invalid-metadata
 // ==UserScript==
 // @name          DSU多站自动签到 (基于Ne-21脚本重构)
-// @namespace     https://bbs.tampermonkey.net.cn/
-// @homepage      https://github.com/little3tar/discuz-dsu-checkin
-// @version       0.0.10
+// @homepage      https://scriptcat.org/zh-CN/script-show-page/4495
+// @homepageURL   https://github.com/little3tar/discuz-dsu-checkin
+// @version       0.0.11
 // @description   支持 油猴中文网、Anime字幕论坛、天使动漫论坛 的 DSU 每日自动签到，优化通知+风控防护+手动菜单
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * */4 * * *
@@ -162,10 +162,7 @@ function startSignProcess() {
     });
 }
 
-// 初始化脚本
-initMenu();
-
-// 查看历史记录 - 修复版本
+// 查看历史记录
 function showHistory() {
     try {
         GM_log('尝试查看历史记录...');
@@ -502,6 +499,9 @@ function getStr(str, start, end) {
     let res = str.match(new RegExp(`${start}(.*?)${end}`));
     return res ? res[1] : null;
 }
+
+// 初始化脚本 - 每次打开浏览器都初始化菜单
+initMenu();
 
 // 启动脚本（自动执行时检查频率）
 if (shouldExecute()) {
