@@ -2,9 +2,9 @@
 // eslint-disable-next-line userscripts/no-invalid-metadata
 // ==UserScript==
 // @name          DSU多站自动签到 (基于Ne-21脚本重构)
-// @homepage      https://github.com/little3tar/discuz-dsu-checkin
 // @namespace     https://scriptcat.org/zh-CN/script-show-page/4495
-// @version       0.0.12
+// @homepage      https://github.com/little3tar/discuz-dsu-checkin
+// @version       0.1.0
 // @description   支持 油猴中文网、Anime字幕论坛、天使动漫论坛 的 DSU 每日自动签到，优化通知+风控防护+手动菜单
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * */4 * * *
