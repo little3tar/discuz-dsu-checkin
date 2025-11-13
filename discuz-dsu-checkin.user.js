@@ -3,7 +3,7 @@
 // @namespace     discuz-dsu-checkin-enhanced
 // @source        https://github.com/little3tar/discuz-dsu-checkin
 // @website       https://scriptcat.org/zh-CN/script-show-page/4495
-// @version       0.2.0
+// @version       0.2.1
 // @description   支持油猴中文网、Anime字幕论坛、天使动漫论坛的DSU每日自动签到
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * * once * *
@@ -171,12 +171,51 @@
                                 return;
                             }
 
-                            GM_log(`${site.name} 签到成功: ${msg}`, "info");
-                            resolve({
-                                success: true,
-                                message: msg,
-                                retried: retryCount
-                            });
+                            // 新增：检查返回的消息是否表示真正的签到成功
+                            const successIndicators = ['恭喜您签到成功', '签到成功', '您今日已经签到'];
+                            const failureIndicators = ['签到时间还没有到', '请在.*后重新进行签到'];
+
+                            let isRealSuccess = false;
+                            let isKnownFailure = false;
+
+                            for (const indicator of successIndicators) {
+                                if (msg.includes(indicator)) {
+                                    isRealSuccess = true;
+                                    break;
+                                }
+                            }
+
+                            for (const indicator of failureIndicators) {
+                                const regex = new RegExp(indicator);
+                                if (regex.test(msg)) {
+                                    isKnownFailure = true;
+                                    break;
+                                }
+                            }
+
+                            if (isRealSuccess) {
+                                GM_log(`${site.name} 签到成功: ${msg}`, "info");
+                                resolve({
+                                    success: true,
+                                    message: msg,
+                                    retried: retryCount
+                                });
+                            } else if (isKnownFailure) {
+                                GM_log(`${site.name} 签到失败(已知原因): ${msg}`, "warn");
+                                resolve({
+                                    success: false,
+                                    message: msg,
+                                    retried: retryCount
+                                });
+                            } else {
+                                // 其他情况，可能是未知的成功或失败情况
+                                GM_log(`${site.name} 签到结果不确定: ${msg}`, "warn");
+                                resolve({
+                                    success: false,
+                                    message: `签到结果不确定: ${msg}`,
+                                    retried: retryCount
+                                });
+                            }
                         },
                         onerror: function (error) {
                             const errorMsg = `请求失败: ${error}`;
