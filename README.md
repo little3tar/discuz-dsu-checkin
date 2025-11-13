@@ -6,7 +6,7 @@
 
 本人能力有限，做出的测试并不多，脚本使用过程中可能遇到各种各样的 BUG。
 
-脚本已经在 [GitHub](https://github.com/little3tar/discuz-dsu-checkin) 开源，**请一定要来**修复某个 BUG 或完善添加更多支持的网站，拜托拜托ᓚᘏᗢ
+脚本已经在 [GitHub](https://github.com/little3tar/discuz-dsu-checkin) 开源，**欢迎来**修复某个 BUG 或完善添加更多支持的网站，拜托拜托ᓚᘏᗢ
 
 ## 背景
 
@@ -97,15 +97,6 @@
 - 站点配置信息
 - 失败站点列表
 - 签到历史记录
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request 来：
-
-- 报告 BUG
-- 添加新网站支持
-- 改进代码质量
-- 优化用户体验
 
 ## 免责声明
 
