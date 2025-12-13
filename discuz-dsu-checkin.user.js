@@ -3,7 +3,7 @@
 // @namespace     discuz-dsu-checkin-enhanced
 // @source        https://github.com/little3tar/discuz-dsu-checkin
 // @website       https://scriptcat.org/zh-CN/script-show-page/4495
-// @version       0.2.1
+// @version       0.2.2
 // @description   支持油猴中文网、Anime字幕论坛、天使动漫论坛的DSU每日自动签到
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * 1-23 once * *
