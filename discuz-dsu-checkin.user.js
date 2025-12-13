@@ -81,6 +81,32 @@
         return res ? res[1] : null;
     }
 
+    // 缩短失败原因描述
+    function shortenReason(message) {
+        if (!message) return '未知错误';
+        const msg = message.trim();
+        if (msg.includes('无法获取formhash') || msg.includes('登录失效')) {
+            return '登录失效';
+        }
+        if (msg.includes('签到时间还没有到') || msg.includes('时间未到')) {
+            return '时间未到';
+        }
+        if (msg.includes('网络错误')) {
+            return '网络错误';
+        }
+        if (msg.includes('请求超时') || msg.includes('获取页面超时') || msg.includes('超时')) {
+            return '超时';
+        }
+        if (msg.includes('获取页面失败') || msg.includes('页面失败')) {
+            return '页面失败';
+        }
+        if (msg.includes('签到结果不确定')) {
+            return '未知错误';
+        }
+        // 默认截断到15字符
+        return msg.length > 15 ? msg.substring(0, 15) + '...' : msg;
+    }
+
     // 获取站点配置
     function getSiteConfig() {
         return GM_getValue(STORAGE_KEYS.SITE_CONFIG, SITES);
@@ -291,7 +317,7 @@
     async function batchSign() {
         const sites = getSiteConfig().filter(site => site.enabled);
         const results = [];
-        const failedSites = [];
+        const failedEntries = []; // {name, reason}
 
         GM_log(`开始批量签到，共 ${sites.length} 个站点`, "info");
 
@@ -304,7 +330,11 @@
                 });
 
                 if (!result.success) {
-                    failedSites.push(site.name);
+                    const shortReason = shortenReason(result.message);
+                    failedEntries.push({
+                        name: site.name,
+                        reason: shortReason
+                    });
                 }
 
                 // 延迟一下，避免请求过于频繁
@@ -317,21 +347,25 @@
                     retried: 0
                 };
                 results.push(errorResult);
-                failedSites.push(site.name);
+                const shortReason = shortenReason(errorResult.message);
+                failedEntries.push({
+                    name: site.name,
+                    reason: shortReason
+                });
             }
         }
 
-        // 保存失败站点列表
-        updateFailedSites(failedSites);
+        // 保存失败站点列表（仅名称）
+        const failedSiteNames = failedEntries.map(entry => entry.name);
+        updateFailedSites(failedSiteNames);
 
         // 推送汇总通知
-        const successCount = results.filter(r => r.success).length;
-        const totalCount = results.length;
-
-        if (failedSites.length === 0) {
-            GM_notification('签到完成', `全部成功！${successCount}/${totalCount} 个站点`);
+        if (failedEntries.length === 0) {
+            GM_notification('签到完成', '全部网站签到成功');
         } else {
-            GM_notification('签到完成', `成功: ${successCount}/${totalCount} 个站点\n失败: ${failedSites.join(', ')}`);
+            // 构建失败描述字符串，例如 "油猴中文网登录失效, 天使动漫论坛时间未到"
+            const failureDescriptions = failedEntries.map(entry => `${entry.name}${entry.reason}`);
+            GM_notification('签到完成', `${failureDescriptions.join(', ')}`);
         }
 
         return results;
@@ -359,7 +393,7 @@
 
         const sites = getSiteConfig().filter(site => failedSites.includes(site.name));
         const results = [];
-        const stillFailedSites = [];
+        const stillFailedEntries = []; // {name, reason}
 
         GM_notification('开始重试', `正在重试 ${failedSites.length} 个失败站点`);
 
@@ -372,7 +406,11 @@
                 });
 
                 if (!result.success) {
-                    stillFailedSites.push(site.name);
+                    const shortReason = shortenReason(result.message);
+                    stillFailedEntries.push({
+                        name: site.name,
+                        reason: shortReason
+                    });
                 }
 
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -384,23 +422,25 @@
                     retried: 0
                 };
                 results.push(errorResult);
-                stillFailedSites.push(site.name);
+                const shortReason = shortenReason(errorResult.message);
+                stillFailedEntries.push({
+                    name: site.name,
+                    reason: shortReason
+                });
             }
         }
 
-        // 更新失败站点列表
-        updateFailedSites(stillFailedSites);
+        // 更新失败站点列表（仅名称）
+        const stillFailedSiteNames = stillFailedEntries.map(entry => entry.name);
+        updateFailedSites(stillFailedSiteNames);
 
-        const successCount = results.filter(r => r.success).length;
-
-        if (stillFailedSites.length === 0) {
-            // 重试成功后所有网站都成功，运行批量签到成功的逻辑
-            const allSites = getSiteConfig().filter(site => site.enabled);
-            const successCount = allSites.length;
-            const totalCount = allSites.length;
-            GM_notification('签到完成', `全部成功！${successCount}/${totalCount} 个站点`);
+        if (stillFailedEntries.length === 0) {
+            // 重试成功后所有网站都成功
+            GM_notification('重试完成', '全部网站签到成功');
         } else {
-            GM_notification('重试完成', `成功重试: ${successCount}/${failedSites.length} 个站点\n仍然失败: ${stillFailedSites.join(', ')}`);
+            // 构建失败描述字符串
+            const failureDescriptions = stillFailedEntries.map(entry => `${entry.name}${entry.reason}`);
+            GM_notification('重试完成', `${failureDescriptions.join(', ')}`);
         }
     }
 
