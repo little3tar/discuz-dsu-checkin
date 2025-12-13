@@ -6,7 +6,7 @@
 // @version       0.2.1
 // @description   支持油猴中文网、Anime字幕论坛、天使动漫论坛的DSU每日自动签到
 // @author        sakura (基于Ne-21脚本重构)
-// @crontab       * * once * *
+// @crontab       * 1-23 once * *
 // @grant         GM_notification
 // @grant         GM_xmlhttpRequest
 // @grant         GM_log
