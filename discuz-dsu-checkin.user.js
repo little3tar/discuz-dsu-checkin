@@ -361,7 +361,7 @@
 
         // 推送汇总通知
         if (failedEntries.length === 0) {
-            GM_notification('签到完成', '全部网站签到成功');
+            GM_notification('签到完成', '全部网站签到成功！');
         } else {
             // 构建失败描述字符串，例如 "油猴中文网登录失效, 天使动漫论坛时间未到"
             const failureDescriptions = failedEntries.map(entry => `${entry.name}${entry.reason}`);
@@ -436,7 +436,7 @@
 
         if (stillFailedEntries.length === 0) {
             // 重试成功后所有网站都成功
-            GM_notification('重试完成', '全部网站签到成功');
+            GM_notification('重试完成', '全部网站签到成功！');
         } else {
             // 构建失败描述字符串
             const failureDescriptions = stillFailedEntries.map(entry => `${entry.name}${entry.reason}`);
