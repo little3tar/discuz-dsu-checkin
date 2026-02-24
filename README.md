@@ -1,103 +1,171 @@
-# DSU多站自动签到 (基于Ne-21脚本重构)
+<div align="center">
 
-代码主要由 [DeepSeek](https://chat.deepseek.com/) 编写。
+# 🗓️ DSU 多站自动签到
 
-## 写在前面的话
+**一个在 [脚本猫](https://scriptcat.org/) 上运行的 Discuz! DSU 每日自动签到脚本**
 
-本人能力有限，做出的测试并不多，脚本使用过程中可能遇到各种各样的 BUG。
+[![Version](https://img.shields.io/badge/version-0.2.2-blue.svg)](https://github.com/little3tar/discuz-dsu-checkin)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/little3tar/discuz-dsu-checkin)
+[![JavaScript](https://img.shields.io/badge/language-JavaScript-yellow.svg)](https://github.com/little3tar/discuz-dsu-checkin)
+[![ScriptCat](https://img.shields.io/badge/platform-脚本猫-orange.svg)](https://scriptcat.org/zh-CN/script-show-page/4495)
 
-脚本已经在 [GitHub](https://github.com/little3tar/discuz-dsu-checkin) 开源，**欢迎来**修复某个 BUG 或完善添加更多支持的网站，拜托拜托ᓚᘏᗢ
+基于 [Ne-21](https://scriptcat.org/zh-CN/users/227) 的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 重构
 
-## 背景
+</div>
 
-此脚本基于[Ne-21](https://scriptcat.org/zh-CN/users/227) 发布的 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332)，在 AI 的帮助下拓展了脚本的功能，现在支持同样使用 Discuz! + DSU签到插件（dsu_paulsign） 进行签到的网站（可能？）。
+---
 
-## 支持的网站
+## ✨ 功能特性
 
-脚本内置支持以下网站：
+- 🚀 **多站批量签到** — 一次运行，自动完成所有已配置站点的签到
+- ⏰ **定时自动执行** — 支持 crontab 定时任务，每天自动签到无需���动操作
+- 🔄 **智能重试机制** — 网络错误、超时等异常情况自动重试，最多 3 次
+- 📢 **通知推送** — 签到完成后推送浏览器通知，汇总成功 / 失败结果
+- 🎛️ **菜单操作** — 浏览器扩展菜单一键手动签到或重试失败站点
+- 🧩 **易于扩展** — 简单配置即可添加更多 Discuz! + DSU 签到插件的网站
 
-1. **油猴中文网** - <https://bbs.tampermonkey.net.cn>
-2. **Anime字幕论坛** - <https://bbs.acgrip.com>  
-3. **天使动漫论坛** - <https://www.tsdm39.com>
+## 📋 支持的网站
 
-可以通过修改脚本顶部 `const SITES` 配置来添加更多支持 DSU 签到的网站，或者通过设置 `enabled` 参数为 `true/false` 来控制是否启用特定网站的签到功能。
+| # | 网站名称 | 地址 |
+|:-:|---------|------|
+| 1 | 油猴中文网 | <https://bbs.tampermonkey.net.cn> |
+| 2 | Anime字幕论坛 | <https://bbs.acgrip.com> |
+| 3 | 天使动漫论坛 | <https://www.tsdm39.com> |
 
-## 使用方法
+> 💡 理论上支持所有使用 **Discuz! + dsu_paulsign** 签到插件的论坛，只需简单配置即可添加。
 
-脚本安装后会自动运行，提供以下功能：
+## 🚀 快速开始
+
+### 前置条件
+
+- 浏览器已安装 **[脚本猫 (ScriptCat)](https://scriptcat.org/)** 扩展
+- 已在目标网站完成登录（脚本依赖浏览器缓存的登录状态）
+
+### 安装步骤
+
+1. 前往 [脚本猫脚本页面](https://scriptcat.org/zh-CN/script-show-page/4495) 安装脚本
+2. 安装时授权脚本访问相关网站的 Cookie
+3. 安装完成后脚本将自动运行 ✅
+
+## 📖 使用方法
 
 ### 自动签到
 
-- 脚本加载时自动执行批量签到
-- 支持定时任务（通过 `@crontab * * once * *` 配置）
+脚本安装后会自动执行，无需手动干预：
 
-### 手动操作菜单
+- **脚本加载时** 自动执行一次批量签到
+- **定时任务** 通过 `@crontab * 1-23 once * *` 配置，每天 1:00 ~ 23:00 之间自动触发一次
 
-在浏览器扩展菜单中可以看到以下选项：
+### 手动操作
 
-- **🚀 立即签到** - 手动强制执行全部签到任务
-- **⚡ 重试失败站点** - 重试上次签到失败的网站
+在浏览器脚本猫扩展菜单中提供以下快捷操作：
 
-## 配置说明
+| 菜单项 | 说明 |
+|-------|------|
+| 🚀 **立即签到** | 强制重新执行全部站点签到（清除失败记录后重签） |
+| ⚡ **重试失败站点** | 仅重试上次签到失败的站点 |
 
-### 站点配置
+## ⚙️ 配置说明
 
-在脚本顶部 `const SITES` 数组中添加新网站：
+### 添加新站点
+
+编辑脚本顶部的 `SITES` 数组，按以下格式添加：
 
 ```javascript
 {
-    name: '网站名称',
-    signPageUrl: '签到页面URL',
-    signApiUrl: '签到API URL',
-    referer: 'Referer头',
-    domain: 'Cookie域',
-    enabled: true  // 是否启用
+    name: '网站名称',           // 站点显示名称
+    signPageUrl: '签到页面URL', // 用于获取 formhash 的页面
+    signApiUrl: '签到API URL',  // 签到请求接口
+    referer: 'Referer头',      // 请求的 Referer 头
+    domain: 'Cookie域',        // Cookie 域名（注意前导点号）
+    enabled: true              // 是否启用（true/false）
 }
 ```
 
+> ⚠️ 添加新站点后，还需在脚本元数据中添加对应的 `@exportcookie` 和 `@connect` 声明。
+
 ### 重试配置
 
-在 `const RETRY_CONFIG` 中配置：
+在 `RETRY_CONFIG` 中自定义重试策略：
 
-- `maxRetries`: 最大重试次数
-- `retryDelay`: 重试间隔时间（毫秒）
-- `timeout`: 请求超时时间（毫秒）
+```javascript
+const RETRY_CONFIG = {
+    maxRetries: 3,     // 最大重试次数
+    retryDelay: 2000,  // 重试间隔（毫秒）
+    timeout: 10000     // 单次请求超时时间（毫秒）
+};
+```
 
-## 注意事项
-
-1. **登录状态**: 脚本依赖浏览器缓存的登录信息，使用前请确保已在支持的网站登录
-2. **Cookie权限**: 脚本需要访问相关网站的 Cookie，安装时会请求权限
-3. **Anime字幕论坛**: 该网站风控较严格，可能需要人机验证，建议先手动访问网站
-
-## 已知问题
-
-- 打开浏览器必须运行一次才能看到手动触发菜单
-- 某些网站可能需要先手动访问才能正常签到
-- 网络不稳定时可能导致签到失败
-
-## 技术实现
+## 🔧 技术实现
 
 ### 签到流程
 
-1. 获取签到页面的 `formhash` 值
-2. 使用获取到的 `formhash` 提交签到请求
-3. 解析返回结果，判断签到是否成功
+```
+┌─────────────┐    ┌──────────────────┐    ┌─────────────┐    ┌──────────┐
+│ 加载签到页面 │ ──▶│ 提取 formhash 值  │ ──▶│ POST 签到请求 │ ──▶│ 解析结果  │
+└─────────────┘    └──────────────────┘    └─────────────┘    └──────────┘
+                          │ 失败                  │ 失败
+                          ▼                       ▼
+                   ┌──────────────┐        ┌──────────────┐
+                   │ 自动重试(≤3) │        │ 自动重试(≤3) │
+                   └──────────────┘        └──────────────┘
+```
 
-### 重试策略
-
-- 网络错误时自动重试
-- 获取 `formhash` 失败时重试
-- 签到请求失败时重试
-- 超过最大重试次数后记录为失败
+1. **获取 formhash** — 请求签到页面，通过正则匹配提取表单验证值
+2. **提交签到** — 携带 formhash 和签到参数（心情、签到语）发起 POST 请求
+3. **结果判定** — 解析返回内容，匹配成功 / 失败关键词，确定签到状态
+4. **失败重试** — 网络错误、超时等异常自动重试，超过上限则记录失败
 
 ### 数据存储
 
-使用 Tampermonkey 的 `GM_setValue` 和 `GM_getValue` API 存储：
+使用脚本猫 `GM_setValue` / `GM_getValue` API 持久化存储：
 
-- 站点配置信息
-- 失败站点列表
-- 签到历史记录
+| 存储键 | 用途 |
+|-------|------|
+| `site_config` | 站点配置信息 |
+| `failed_sites` | 上次签到失败的站点列表 |
 
-## 免责声明
+### 使用的 API
 
-本脚本仅供学习研究使用，使用脚本请遵守相关网站的服务条款。因使用本脚本造成的任何问题，开发者不承担任何责任。
+| API | 用途 |
+|-----|------|
+| `GM_xmlhttpRequest` | 跨域发起签到网络请求 |
+| `GM_notification` | 推送浏览器签到结果通知 |
+| `GM_registerMenuCommand` | 注册手动操作菜单 |
+| `GM_setValue` / `GM_getValue` | 持久化存储数据 |
+| `GM_log` | 记录运行日志 |
+
+## ⚠️ 注意事项
+
+1. **保持登录状态** — 脚本依赖浏览器缓存的 Cookie，使用前请确保已在各目标网站登录
+2. **Cookie 权限** — 首次安装时需授权脚本访问相关网站的 Cookie
+3. **Anime字幕论坛** — 该站风控较严，可能触发人机验证，建议先手动访问一次
+4. **首次运行** — 打开浏览器后需运行一次脚本才能在菜单中看到手动触发选项
+
+## 🐛 已知问题
+
+- 部分网站首次使用时需先手动访问才能正常签到
+- 网络不稳定环境下可能导致签到失败（会自动重试）
+- 目标网站域名变更时需手动更新配置
+
+## 🤝 参与贡献
+
+本人能力有限，脚本使用过程���可能遇到各种 BUG。
+
+**欢迎提交 PR** 来修复 BUG 或添加更多网站支持！ᓚᘏᗢ
+
+1. Fork 本仓库
+2. 创建你的功能分支 (`git checkout -b feature/new-site`)
+3. 提交你的修改 (`git commit -m 'feat: 添加XXX网站支持'`)
+4. 推送到分支 (`git push origin feature/new-site`)
+5. 创建 Pull Request
+
+## 📜 致谢
+
+- [Ne-21](https://scriptcat.org/zh-CN/users/227) — 原始 [DSU每日自动签到(上云版)](https://scriptcat.org/zh-CN/script-show-page/332) 作者
+- [DeepSeek](https://chat.deepseek.com/) — AI 辅助代码编写
+- [脚本猫 (ScriptCat)](https://scriptcat.org/) — 脚本运行平台
+
+## ⚖️ 免责声明
+
+本脚本仅供学习研究使用。使用本脚本请遵守相关网站的服务条款与规定。因使用本脚本造成的任何问题，开发者不承担任何责任。
