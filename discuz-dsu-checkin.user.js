@@ -3,7 +3,7 @@
 // @namespace     discuz-dsu-checkin-enhanced
 // @source        https://github.com/little3tar/discuz-dsu-checkin
 // @website       https://scriptcat.org/zh-CN/script-show-page/4495
-// @version       0.2.5
+// @version       0.2.6
 // @description   支持油猴中文网、Anime字幕论坛的DSU每日自动签到
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * 1-23 once * *
@@ -16,10 +16,10 @@
 // @exportcookie  domain=.tampermonkey.net.cn
 // @exportcookie  domain=.bbs.acgrip.com
 // 天使动漫论坛暂时关闭，相关权限与站点配置临时停用。
-// // @exportcookie  domain=.tsdm39.com
+// @exportcookie  domain=.tsdm39.com
 // @connect       bbs.tampermonkey.net.cn
 // @connect       bbs.acgrip.com
-// // @connect       www.tsdm39.com
+// @connect       www.tsdm39.com
 // ==/UserScript==
 
 (function () {
@@ -91,15 +91,29 @@
         return TEMP_DISABLED_SITES.includes(siteName);
     }
 
+    function notify(title, text) {
+        GM_notification({ title, text });
+    }
+
     function normalizeSiteConfig(storedSites) {
         if (!Array.isArray(storedSites)) {
-            return SITES;
+            return SITES.filter(site => !isTemporarilyDisabledSite(site.name));
         }
 
-        const activeSiteNames = new Set(SITES.map(site => site.name));
-        return storedSites
-            .filter(site => activeSiteNames.has(site.name))
-            .filter(site => !isTemporarilyDisabledSite(site.name));
+        const storedSitesByName = new Map(storedSites.map(site => [site.name, site]));
+        return SITES
+            .filter(site => !isTemporarilyDisabledSite(site.name))
+            .map(site => {
+                const storedSite = storedSitesByName.get(site.name);
+                if (!storedSite) {
+                    return site;
+                }
+
+                return {
+                    ...site,
+                    enabled: typeof storedSite.enabled === 'boolean' ? storedSite.enabled : site.enabled
+                };
+            });
     }
 
     // 初始化存储
@@ -150,7 +164,7 @@
             /formhash["\s]*:["\s]*([a-f0-9]+)/i,
             /<input[^>]*name=["']formhash["'][^>]*value=["']([a-f0-9]+)["']/i
         ];
-        
+
         for (const pattern of patterns) {
             const match = html.match(pattern);
             if (match && match[1]) {
@@ -163,14 +177,14 @@
     // 提取签到响应消息
     function extractSignMessage(html) {
         const cleanHtml = html.replace(/\s/g, "");
-        
+
         // 尝试多种提取模式
         const patterns = [
             /<divclass="c">([^<]+)<\/div>/i,
             /<divid="messagetext"[^>]*>([^<]+)<\/div>/i,
             /CDATA\[([^\]]+)\]\]>/i
         ];
-        
+
         for (const pattern of patterns) {
             const match = cleanHtml.match(pattern);
             if (match && match[1]) {
@@ -236,7 +250,7 @@
     // 处理请求错误并决定是否重试
     async function handleRequestError(site, errorMsg, retryCount, resolve) {
         GM_log(`${site.name} ${errorMsg}`, "warn");
-        
+
         if (retryCount < RETRY_CONFIG.maxRetries) {
             setTimeout(async () => {
                 const result = await signSiteWithRetry(site, retryCount + 1);
@@ -282,7 +296,7 @@
 
                     // 第二步：提交签到
                     const signData = `formhash=${encodeURIComponent(formhash)}&qdxq=${getRandomMood()}&qdmode=1&todaysay=${encodeURIComponent(getRandomSaying())}&fastreply=0`;
-                    
+
                     GM_xmlhttpRequest({
                         method: 'POST',
                         url: site.signApiUrl,
@@ -396,18 +410,18 @@
         // 保存失败站点列表（仅名称）
         const failedSiteNames = failedEntries.map(entry => entry.name);
         updateFailedSites(failedSiteNames);
-        
+
         // 推送汇总通知
         const successCount = results.filter(r => r.success).length;
         if (failedEntries.length === 0) {
             // 只有全部站点明确成功或已签到，才记录当天已签到，避免失败后当天自动任务被跳过。
             updateSignDate();
-            GM_notification('签到完成', `全部 ${successCount} 个站点签到成功！`);
+            notify('签到完成', `全部 ${successCount} 个站点签到成功！`);
         } else {
             const failureDescriptions = failedEntries.slice(0, 3).map(entry => `${entry.name}: ${entry.reason}`);
             const moreText = failedEntries.length > 3 ? ` 等${failedEntries.length}个` : '';
             const title = successCount === 0 ? '签到失败' : '签到部分失败';
-            GM_notification(title, `成功 ${successCount}/${results.length}，失败: ${failureDescriptions.join(', ')}${moreText}`);
+            notify(title, `成功 ${successCount}/${results.length}，失败: ${failureDescriptions.join(', ')}${moreText}`);
         }
 
         return results;
@@ -415,7 +429,7 @@
 
     // 立即执行签到（强制重新签到所有站点）
     function executeSignNow() {
-        GM_notification('开始签到', '正在强制重新签到所有站点...');
+        notify('开始签到', '正在强制重新签到所有站点...');
 
         // 清除之前的失败记录，强制重新签到所有站点
         updateFailedSites([]);
@@ -429,15 +443,21 @@
         const failedSites = getFailedSites();
 
         if (failedSites.length === 0) {
-            GM_notification('重试失败站点', '没有需要重试的失败站点');
+            notify('重试失败站点', '没有需要重试的失败站点');
             return;
         }
 
         const sites = getSiteConfig().filter(site => failedSites.includes(site.name));
+        if (sites.length === 0) {
+            updateFailedSites([]);
+            notify('重试失败站点', '没有可重试的启用站点');
+            return;
+        }
+
         const results = [];
         const stillFailedEntries = []; // {name, reason}
 
-        GM_notification('开始重试', `正在重试 ${failedSites.length} 个失败站点`);
+        notify('开始重试', `正在重试 ${sites.length} 个失败站点`);
 
         for (const site of sites) {
             try {
@@ -478,11 +498,12 @@
 
         const successCount = results.filter(r => r.success).length;
         if (stillFailedEntries.length === 0) {
-            GM_notification('重试完成', `全部 ${successCount} 个站点签到成功！`);
+            updateSignDate();
+            notify('重试完成', `全部 ${successCount} 个站点签到成功！`);
         } else {
             const failureDescriptions = stillFailedEntries.slice(0, 3).map(entry => `${entry.name}: ${entry.reason}`);
             const moreText = stillFailedEntries.length > 3 ? ` 等${stillFailedEntries.length}个` : '';
-            GM_notification('重试完成', `成功 ${successCount}/${results.length}，失败: ${failureDescriptions.join(', ')}${moreText}`);
+            notify('重试完成', `成功 ${successCount}/${results.length}，失败: ${failureDescriptions.join(', ')}${moreText}`);
         }
     }
 
