@@ -4,7 +4,7 @@
 
 **Discuz! DSU 每日自动签到脚本 - 支持脚本猫定时任务**
 
-[![Version](https://img.shields.io/badge/version-0.2.5-blue.svg)](https://github.com/little3tar/discuz-dsu-checkin)
+[![Version](https://img.shields.io/badge/version-0.2.7-blue.svg)](https://github.com/little3tar/discuz-dsu-checkin)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/little3tar/discuz-dsu-checkin)
 [![JavaScript](https://img.shields.io/badge/language-JavaScript-yellow.svg)](https://github.com/little3tar/discuz-dsu-checkin)
 [![ScriptCat](https://img.shields.io/badge/platform-脚本猫-orange.svg)](https://scriptcat.org/zh-CN/script-show-page/4495)
@@ -31,9 +31,7 @@
 | :-: | ------------- | --------------------------------- | -------- |
 |  1  | 油猴中文网    | <https://bbs.tampermonkey.net.cn> | 已启用   |
 |  2  | Anime字幕论坛 | <https://bbs.acgrip.com>          | 已启用   |
-|  3  | 天使动漫论坛  | <https://www.tsdm39.com>          | 暂时停用 |
-
-> ℹ️ 天使动漫论坛疑似暂时关闭，脚本中已临时注释该站点配置与相关权限声明，待网站恢复后可取消注释重新启用。
+|  3  | 天使动漫论坛  | <https://www.tsdm39.com>          | 已启用   |
 
 > 💡 理论上支持所有使用 **Discuz! + dsu_paulsign** 签到插件的论坛，只需简单配置即可添加。
 
@@ -141,8 +139,7 @@ const RETRY_CONFIG = {
 1. **保持登录状态** — 脚本依赖浏览器缓存的 Cookie，使用前请确保已在各目标网站登录
 2. **Cookie 权限** — 首次安装时需授权脚本访问相关网站的 Cookie
 3. **Anime字幕论坛** — 该站风控较严，可能触发人机验证，建议先手动访问一次
-4. **天使动漫论坛** — 该站点当前暂时停用，恢复访问后可在脚本中取消注释重新启用
-5. **防重复机制** — 同一天内多次加载脚本不会重复签到，手动签到不受此限制
+4. **防重复机制** — 同一天内多次加载脚本不会重复签到，手动签到不受此限制
 
 ## 🐛 已知问题
 
@@ -152,6 +149,11 @@ const RETRY_CONFIG = {
 - 网站 HTML 结构变化可能导致 formhash 提取失败（已支持多种匹配模式）
 
 ## 📝 更新日志
+
+### v0.2.7 (2026-09-22)
+
+- 天使动漫论坛恢复访问，重新启用其签到配置与 `@exportcookie` / `@connect` 权限声明
+- 移除临时停用站点过滤机制
 
 ### v0.2.5 (2026-04-26)
 

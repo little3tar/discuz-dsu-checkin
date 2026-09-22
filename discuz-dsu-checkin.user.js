@@ -3,8 +3,8 @@
 // @namespace     discuz-dsu-checkin-enhanced
 // @source        https://github.com/little3tar/discuz-dsu-checkin
 // @website       https://scriptcat.org/zh-CN/script-show-page/4495
-// @version       0.2.6
-// @description   支持油猴中文网、Anime字幕论坛的DSU每日自动签到
+// @version       0.2.7
+// @description   支持油猴中文网、Anime字幕论坛、天使动漫论坛的DSU每日自动签到
 // @author        sakura (基于Ne-21脚本重构)
 // @crontab       * 1-23 once * *
 // @grant         GM_notification
@@ -15,7 +15,6 @@
 // @grant         GM_registerMenuCommand
 // @exportcookie  domain=.tampermonkey.net.cn
 // @exportcookie  domain=.bbs.acgrip.com
-// 天使动漫论坛暂时关闭，相关权限与站点配置临时停用。
 // @exportcookie  domain=.tsdm39.com
 // @connect       bbs.tampermonkey.net.cn
 // @connect       bbs.acgrip.com
@@ -43,19 +42,15 @@
             domain: '.bbs.acgrip.com',
             enabled: true
         },
-        // 天使动漫论坛暂时关闭，先保留配置供后续恢复。
-        // {
-        //     name: '天使动漫论坛',
-        //     signPageUrl: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign',
-        //     signApiUrl: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1',
-        //     referer: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign',
-        //     domain: '.tsdm39.com',
-        //     enabled: true
-        // }
+        {
+            name: '天使动漫论坛',
+            signPageUrl: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign',
+            signApiUrl: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1',
+            referer: 'https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign',
+            domain: '.tsdm39.com',
+            enabled: true
+        }
     ];
-
-    // 临时停用站点：用于过滤旧版本已经写入 GM 存储的站点配置。
-    const TEMP_DISABLED_SITES = ['天使动漫论坛'];
 
     // 重试配置
     const RETRY_CONFIG = {
@@ -87,22 +82,17 @@
         LAST_SIGN_DATE: 'last_sign_date'
     };
 
-    function isTemporarilyDisabledSite(siteName) {
-        return TEMP_DISABLED_SITES.includes(siteName);
-    }
-
     function notify(title, text) {
         GM_notification({ title, text });
     }
 
     function normalizeSiteConfig(storedSites) {
         if (!Array.isArray(storedSites)) {
-            return SITES.filter(site => !isTemporarilyDisabledSite(site.name));
+            return SITES;
         }
 
         const storedSitesByName = new Map(storedSites.map(site => [site.name, site]));
         return SITES
-            .filter(site => !isTemporarilyDisabledSite(site.name))
             .map(site => {
                 const storedSite = storedSitesByName.get(site.name);
                 if (!storedSite) {
@@ -123,11 +113,6 @@
 
         if (!GM_getValue(STORAGE_KEYS.FAILED_SITES)) {
             GM_setValue(STORAGE_KEYS.FAILED_SITES, []);
-        } else {
-            GM_setValue(
-                STORAGE_KEYS.FAILED_SITES,
-                GM_getValue(STORAGE_KEYS.FAILED_SITES, []).filter(siteName => !isTemporarilyDisabledSite(siteName))
-            );
         }
         if (!GM_getValue(STORAGE_KEYS.LAST_SIGN_DATE)) {
             GM_setValue(STORAGE_KEYS.LAST_SIGN_DATE, '');
